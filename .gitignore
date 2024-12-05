@@ -16,3 +16,5 @@ assets.packed
 resources\assets.packed
 packer
 resources/assets.packed
+electrovoyage_asset_unpacker.py
+assetpack_exceptions.py

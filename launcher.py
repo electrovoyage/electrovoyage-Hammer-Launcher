@@ -556,6 +556,15 @@ def reloadsdk():
 
     medialist = sdkdata['medialist']
     #print(medialist)
+    
+class AppEditor:
+    def __init__(self):
+        self.win = Toplevel('Edit app')
+        
+    def edit(self, app: App):
+        pass
+    
+AppEditor()
 
 if 'sdk.json' not in os.listdir(APP_DIRECTORY):
     ginfo = ask_for_gameinfo()
@@ -573,12 +582,15 @@ if 'sdk.json' not in os.listdir(APP_DIRECTORY):
         
 reloadsdk()
     
-with open(os.path.join(APP_DIRECTORY, 'sdktemp'), 'w') as sdk:
-    sdkdata = medialist_transform.upgradeMediaList(sdkdata)
-    json.dump(sdkdata, sdk, indent=4)
-    
-os.rename(os.path.join(APP_DIRECTORY, 'sdktemp')), os.path.join(APP_DIRECTORY, 'sdk.json')
-        
+try:
+    json.dumps(sdkdata)
+except Exception:
+    pass
+else: 
+    with open(os.path.join(APP_DIRECTORY, 'sdktemp'), 'w') as sdk:
+        sdkdata = medialist_transform.upgradeMediaList(sdkdata)
+        json.dump(sdkdata, sdk, indent=4)
+
 global medialist
 medialist = sdkdata['medialist']
 for group, programs in medialist.items():

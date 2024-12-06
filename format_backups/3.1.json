@@ -1,0 +1,94 @@
+{
+    "binpath": "D:/Steam/steamapps/common/Portal 2/bin",
+    "sdkpath": "D:/Steam/steamapps/common/Portal 2/bin\\SDKLauncher",
+    "vproject": "D:/Steam/steamapps/common/Portal 2/portal2",
+    "version": "3.1",
+    "medialist": {
+        "Applications": [
+            {
+                "Image": "icon_hammer",
+                "Program": "hammer.exe -nop4",
+                "Title": "Hammer World Editor",
+                "invert_image": false,
+                "ShellExecute": null,
+                "tooltip": "Map editor"
+            },
+            {
+                "Image": "swarm",
+                "Program": "swarm_hammer.bat",
+                "Title": "Hammer World Editor (Alien Swarm)",
+                "invert_image": true,
+                "ShellExecute": null,
+                "tooltip": null
+            },
+            {
+                "Image": "icon_bspsource",
+                "Program": "bspsrc.bat",
+                "Title": "BSPSource",
+                "invert_image": true,
+                "ShellExecute": null,
+                "tooltip": null
+            },
+            {
+                "Image": "icon_hlmv",
+                "Program": "hlmv.exe",
+                "Title": "Model Viewer",
+                "invert_image": false,
+                "ShellExecute": null,
+                "tooltip": null
+            },
+            {
+                "Image": "icon_portal2",
+                "Program": null,
+                "Title": "Portal 2",
+                "invert_image": true,
+                "ShellExecute": "steam://rungameid/620",
+                "tooltip": null
+            }
+        ],
+        "Assets": [
+            {
+                "Image": "icon_gcf",
+                "Program": null,
+                "Title": "GCFScape",
+                "invert_image": true,
+                "ShellExecute": "D:/GCFScape/GCFScape.exe",
+                "tooltip": null
+            },
+            {
+                "Image": "icon_crowbar",
+                "Program": "Crowbar.exe",
+                "Title": "Crowbar",
+                "invert_image": true,
+                "ShellExecute": null,
+                "tooltip": null
+            },
+            {
+                "Image": "icon_vmtx",
+                "Program": null,
+                "Title": "VMTx Material Editor",
+                "invert_image": true,
+                "ShellExecute": "D:/VMTx",
+                "tooltip": null
+            },
+            {
+                "Image": "icon_vtf",
+                "Program": null,
+                "Title": "VTFEdit",
+                "invert_image": true,
+                "ShellExecute": "E:/VTFEdit/VTFEdit.exe",
+                "tooltip": null
+            }
+        ],
+        "Finalize": [
+            {
+                "Image": "icon_publish",
+                "Program": "p2map_publish",
+                "Title": "Publish",
+                "invert_image": true,
+                "ShellExecute": null,
+                "tooltip": null
+            }
+        ]
+    }
+}

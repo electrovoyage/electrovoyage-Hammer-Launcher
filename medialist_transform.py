@@ -51,13 +51,14 @@ def transformMediaList(medialist: dict) -> dict:
             
     return newdict
 
-LATEST_SDK_VERSION = '3'
+LATEST_SDK_VERSION = '3.1'
 VALVE_ORIGINAL_ICONS = ['icon_create', 'icon_document', 'icon_faceposer', 'icon_file', 'icon_files', 'icon_folder', 'icon_folder_16', 'icon_hammer', 'icon_hl2_media', 'icon_hlmv', 'icon_refresh', 'icon_reset', 'icon_scenemanager', 'icon_soft', 'icon_weblink']
 
-def upgradeMediaList(medialist: dict) -> dict:
+def upgradeMediaList(_medialist: dict) -> dict:
     '''
     Convert a sdk.json file to the latest version.
     '''
+    medialist = _medialist.copy()
     medialist.setdefault('version', '1')
     version = medialist['version']
     #print(medialist)
@@ -73,26 +74,58 @@ def upgradeMediaList(medialist: dict) -> dict:
             else:
                 ginfo = ask_for_gameinfo()
                 contentpath = os.path.dirname(ginfo)
-        match version:
-            case '1':
-                newmedialist: dict[str, list[dict[str, str]]] = {}
-                for categoryname, categoryapps in medialist['medialist'].items():
-                    #print(categoryname, categoryapps)
+        #match version:
+        #    case '1':
+        #        newmedialist: dict[str, list[dict[str, str]]] = {}
+        #        for categoryname, categoryapps in medialist['medialist'].items():
+        #            #print(categoryname, categoryapps)
+        #            newmedialist[categoryname] = []
+        #            
+        #            for _, programdata in categoryapps.items():
+        #                programdata['invert_image'] = programdata['Image'] not in VALVE_ORIGINAL_ICONS
+        #                programdata['tooltip'] = None
+        #                newmedialist[categoryname].append(programdata)
+        #                
+        #        #return {
+        #        #    'binpath': medialist['binpath'],
+        #        #    'sdkpath': medialist['sdkpath'],
+        #        #    'vproject': contentpath,
+        #        #    'version': LATEST_SDK_VERSION,
+        #        #    'medialist': newmedialist,
+        #        #}
+        #    case '2':
+        #        newmedialist = medialist.copy()
+        #        newmedialist['vproject'] = contentpath
+        #        newmedialist['version'] = LATEST_SDK_VERSION
+        #        
+        #        for programlist in newmedialist['medialist'].values():
+        #            for program in programlist:
+        #                program['tooltip'] = None
+        #        
+        #        return newmedialist
+        #    
+        #    case '3':
+        #        
+        fver = float(version)
+        if fver < 2:
+            newmedialist: dict[str, list[dict[str, str]]] = {}
+            for categoryname, categoryapps in medialist['medialist'].items():
                     newmedialist[categoryname] = []
                     
-                    for _, programdata in categoryapps.items():
+                    for programdata in categoryapps.values():
                         programdata['invert_image'] = programdata['Image'] not in VALVE_ORIGINAL_ICONS
+                        programdata['tooltip'] = None
                         newmedialist[categoryname].append(programdata)
                         
-                return {
-                    'binpath': medialist['binpath'],
-                    'sdkpath': medialist['sdkpath'],
-                    'vproject': contentpath,
-                    'version': LATEST_SDK_VERSION,
-                    'medialist': newmedialist,
-                }
-            case '2':
-                newmedialist = medialist.copy()
-                newmedialist['vproject'] = contentpath
-                newmedialist['version'] = LATEST_SDK_VERSION
-                return newmedialist
+            medialist['medialist'] = newmedialist
+            
+        if fver < 3:
+            medialist['vproject'] = contentpath
+            
+        if fver < 3.1:
+            for programlist in medialist['medialist'].values():
+                for program in programlist:
+                    program['tooltip'] = None
+                    
+        medialist['version'] = LATEST_SDK_VERSION
+        return medialist

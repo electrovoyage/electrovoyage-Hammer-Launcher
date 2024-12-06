@@ -20,6 +20,7 @@ from requests.exceptions import RequestException
 from time import sleep
 from datetime import date
 from random import shuffle
+from tktooltip import ToolTip
 ask_for_gameinfo = medialist_transform.ask_for_gameinfo
 
 def _find_first(s: str, chars: list[str] | tuple[str]) -> int:
@@ -67,7 +68,7 @@ def is_newer_version(version: str) -> bool:
         
     return False
 
-VERSION = '0.9.2'
+VERSION = '0.9.3'
 
 UPDATE_FETCH_FAILED, NOUPDATE, UPDATE_AVAILABLE = range(3)
 
@@ -110,7 +111,7 @@ def checkforupdates(retries: int = 5, delay_ms: int = 1000) -> int:
         
     return best_return
     
-def makeversionstring() -> str:
+def makeversionstring() -> tuple[str, int]:
     update_status = checkforupdates()
     match update_status:
         case 1:
@@ -125,7 +126,7 @@ setcursor = lambda x: win.configure(cursor=x) if os.name == 'nt' else lambda x: 
 def showversionstring() -> int:
     setcursor('starting')
     s, status = makeversionstring()
-    statusstr.configure(text=f'Version {s}')
+    statusstr.configure(text=f'Version {s} (SDK format version {medialist_transform.LATEST_SDK_VERSION})')
     setcursor('arrow')
     return status
 
@@ -287,7 +288,7 @@ class App:
     def invert_image(self) -> bool:
         return self._invert_var.get()
     
-    def __init__(self, name: str, iconpath: str, icon: Image.Image, invertedicon: Image.Image, Program: ProgramType = None, ShellExecute: ProgramType = None, groupname: str = '', programid: str = '', invert_image: bool = True):
+    def __init__(self, name: str, iconpath: str, icon: Image.Image, invertedicon: Image.Image, Program: ProgramType = None, ShellExecute: ProgramType = None, groupname: str = '', programid: str = '', invert_image: bool = True, tooltip: str | None = None):
         if not (Program or ShellExecute):
             raise ValueError(f'invalid application {name}: no ShellExecute or Program defined')
         
@@ -307,6 +308,7 @@ class App:
         self.groupname = groupname
         self.programid = programid
         self.iconpath = iconpath
+        self.tooltip = tooltip
         
         self.STARTED_INVERTED = invert_image
         
@@ -383,8 +385,8 @@ class ApplicationList:
         self.groups: dict[str, Frame] = {}
         self.group_lists: dict[str, list[App]] = {}
         
-    def addApp(self, name: str, iconpath: str, icon: Image.Image, invertedicon: Image.Image, groupname: str, program: ProgramType = None, shellexecute: ProgramType = None, programid: str = '', invert_image: bool = True):
-        newapp = App(name, iconpath, icon, invertedicon, program, shellexecute, groupname, programid, invert_image)
+    def addApp(self, name: str, iconpath: str, icon: Image.Image, invertedicon: Image.Image, groupname: str, program: ProgramType = None, shellexecute: ProgramType = None, programid: str = '', invert_image: bool = True, tooltip: str | None = None):
+        newapp = App(name, iconpath, icon, invertedicon, program, shellexecute, groupname, programid, invert_image, tooltip)
         self.apps.append(newapp)
         if groupname not in tuple(self.group_lists.keys()):
             self.group_lists[groupname] = []
@@ -497,6 +499,12 @@ class ApplicationList:
         app.setframe(frame)
         app.set_image_label(imagelabel)
         self.app_frames.append(frame)
+        
+        #ToolTip(frame, )
+        if app.tooltip != None:
+            ToolTip(border=2, borderwidth=2, relief=GROOVE, bg = "#222222", fg="#FFFFFF", aspect = 1000, widget=frame, msg=app.tooltip)
+            #ToolTip(parent_kwargs={'bg': '#222222'}, widget=namelabel, msg=app.tooltip)
+            #ToolTip(parent_kwargs={'bg': '#222222'}, widget=imagelabel, msg=app.tooltip)
     
     def move_app(self, app: App, newgroup: str):
         app.frame.destroy()
@@ -575,7 +583,7 @@ for group, programs in medialist.items():
         inverted_img = _img if program['invert_image'] else invertAlpha(_img)
         program.setdefault('Program', None)
         program.setdefault('ShellExecute', None)
-        app_list_manager.addApp(program['Title'], program['Image'], img, inverted_img, group, program['Program'], program['ShellExecute'], program['Title'].lower(), program['invert_image'])
+        app_list_manager.addApp(program['Title'], program['Image'], img, inverted_img, group, program['Program'], program['ShellExecute'], program['Title'].lower(), program['invert_image'], program['tooltip'])
     
 win.wm_protocol('WM_DELETE_WINDOW', onWindowClosed)
 

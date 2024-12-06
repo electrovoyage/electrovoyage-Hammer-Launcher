@@ -587,7 +587,7 @@ try:
 except Exception:
     pass
 else: 
-    with open(os.path.join(APP_DIRECTORY, 'sdktemp'), 'w') as sdk:
+    with open(os.path.join(APP_DIRECTORY, 'sdk.json'), 'w') as sdk:
         sdkdata = medialist_transform.upgradeMediaList(sdkdata)
         json.dump(sdkdata, sdk, indent=4)
 

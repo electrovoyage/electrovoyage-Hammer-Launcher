@@ -175,12 +175,17 @@ def getcwd() -> str:
 # Workaround for shortcuts / "open with" and working directory
 if PYINSTALLER:
     APP_DIRECTORY = os.path.dirname(sys.executable)
+    APP_RESOURCE_DIRECTORY = os.path.join(
+        os.path.dirname(__file__),
+        'resources'
+    )
 else:
     APP_DIRECTORY = getcwd()
+    APP_RESOURCE_DIRECTORY = os.path.join(APP_DIRECTORY, 'resources')
 
 #assetpack = AssetPackWrapper(os.path.join(getcwd(), 'resources', 'assets.packed'), PYINSTALLER, os.path.join(APP_DIRECTORY, 'resources'))
 
-win = Window(aprilfools('electrovoyage.\'s Hammer Launcher'), 'darkly', os.path.join(getcwd(), 'resources', 'logo.png'), (450, 600), minsize=(450, 300), hdpi=False)
+win = Window(aprilfools('electrovoyage.\'s Hammer Launcher'), 'darkly', os.path.join(APP_RESOURCE_DIRECTORY, 'logo.png'), (450, 600), minsize=(450, 300), hdpi=False)
 win.withdraw()
 if '--shutup' not in sys.argv:
     showwarning(aprilfools('Hammer launcher beta'), aprilfools('This is a beta version of electrovoyage\'s Hammer Launcher. If another program shows up in your Discord profile instead of the Hammer launcher or if you encounter any other sort of issue, please report them to:\n\nelectrovoyagesoftware@gmail.com, or\n\nhttps://github.com/electrovoyage/electrovoyage-Hammer-Launcher/issues\n\nAdd the "--shutup" startup argument to remove this warning.'))
@@ -215,7 +220,7 @@ if '--superdark' in sys.argv:
     
 trebuchet_bold = Font(family='Trebuchet MS', size=16, weight='bold')
     
-pil_logo = Image.open(os.path.join(APP_DIRECTORY, 'resources', 'logo.png'))
+pil_logo = Image.open(os.path.join(APP_RESOURCE_DIRECTORY, 'logo.png'))
 
 global logo, large_logo
 logo = ImageTk.PhotoImage(pil_logo.resize((48, 48), Image.BILINEAR))
@@ -360,7 +365,8 @@ class App:
             'Program': None if self.shellexecute else self.program,
             'Title': self.name,
             'invert_image': self.invert_image,
-            'ShellExecute': self.program if self.shellexecute else None
+            'ShellExecute': self.program if self.shellexecute else None,
+            'tooltip': self.tooltip
         }
     
 def swapvalues(container: list | tuple, a: int, b: int):
@@ -567,9 +573,11 @@ if 'sdk.json' not in os.listdir(APP_DIRECTORY):
         
 reloadsdk()
     
-with open(os.path.join(APP_DIRECTORY, 'sdk.json'), 'w') as sdk:
+with open(os.path.join(APP_DIRECTORY, 'sdktemp'), 'w') as sdk:
     sdkdata = medialist_transform.upgradeMediaList(sdkdata)
     json.dump(sdkdata, sdk, indent=4)
+    
+os.rename(os.path.join(APP_DIRECTORY, 'sdktemp')), os.path.join(APP_DIRECTORY, 'sdk.json')
         
 global medialist
 medialist = sdkdata['medialist']

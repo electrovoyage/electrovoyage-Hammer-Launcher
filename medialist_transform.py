@@ -129,3 +129,5 @@ def upgradeMediaList(_medialist: dict) -> dict:
                     
         medialist['version'] = LATEST_SDK_VERSION
         return medialist
+    
+        # Don't forget to edit the .serialize method of the App class after adding a new feature to sdk.json!

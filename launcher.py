@@ -14,7 +14,6 @@ import medialist_transform
 import webbrowser
 import subprocess
 from shlex import split as splitcommand
-from electrovoyage_asset_unpacker import AssetPackWrapper
 from requests import get as getrequest
 from requests.exceptions import RequestException
 from time import sleep
@@ -179,7 +178,7 @@ if PYINSTALLER:
 else:
     APP_DIRECTORY = getcwd()
 
-assetpack = AssetPackWrapper(os.path.join(getcwd(), 'resources', 'assets.packed'), PYINSTALLER, os.path.join(APP_DIRECTORY, 'resources'))
+#assetpack = AssetPackWrapper(os.path.join(getcwd(), 'resources', 'assets.packed'), PYINSTALLER, os.path.join(APP_DIRECTORY, 'resources'))
 
 win = Window(aprilfools('electrovoyage.\'s Hammer Launcher'), 'darkly', os.path.join(getcwd(), 'resources', 'logo.png'), (450, 600), minsize=(450, 300), hdpi=False)
 win.withdraw()
@@ -216,7 +215,7 @@ if '--superdark' in sys.argv:
     
 trebuchet_bold = Font(family='Trebuchet MS', size=16, weight='bold')
     
-pil_logo = Image.open(assetpack.getfile('resources/logo.png'))
+pil_logo = Image.open(os.path.join(APP_DIRECTORY, 'resources', 'logo.png'))
 
 global logo, large_logo
 logo = ImageTk.PhotoImage(pil_logo.resize((48, 48), Image.BILINEAR))

@@ -355,7 +355,8 @@ class App:
         menu.add_command(label=aprilfools('Move up'), command=lambda: app_list_manager.swap_above(self))
         menu.add_command(label=aprilfools('Move down'), command=lambda: app_list_manager.swap_below(self))
         menu.add_separator()
-        menu.add_checkbutton(label=aprilfools('Invert image'), onvalue=True, offvalue=False, variable=self._invert_var, command=self.saveimageinversion)
+        #menu.add_checkbutton(label=aprilfools('Invert image'), onvalue=True, offvalue=False, variable=self._invert_var, command=self.saveimageinversion)
+        menu.add_command(label=aprilfools('Edit'), command=lambda: edit_win.edit(self))
         
         return menu
     
@@ -558,13 +559,159 @@ def reloadsdk():
     #print(medialist)
     
 class AppEditor:
+    EXECUTABLE = 'Executable in bin/'
+    SHELLCOMMAND = 'Link / absolute path'
+    
     def __init__(self):
         self.win = Toplevel('Edit app')
+        dark_title_bar(self.win)
+        
+        # preview
+        self.previewframe = Labelframe(self.win, width=450, text='Preview', padding=10)
+        self.previewframe.pack(side=TOP, pady=10)
+        
+        self.preview_image = Label(self.previewframe, compound=RIGHT)
+        self.preview_image.pack(side=RIGHT, anchor=E)
+        
+        self.namevar = StringVar(self.win, 'New program')
+        self.preview_label = Label(self.previewframe, textvariable=self.namevar, font=('Inter', 12))
+        self.preview_label.pack(side=LEFT, anchor=W)
+        
+        # settings
+        self.pane1 = Frame(self.win)
+        self.pane1.pack(side=TOP, fill=X, expand=True)
+        
+        self.icon_frame = Labelframe(self.pane1, text='Image', padding=10)
+        self.icon_frame.pack(padx=10, side=LEFT)
+        
+        self.custom_image_var = BooleanVar(self.win, False)
+        self.vanilla_image_radiobtn = Radiobutton(self.icon_frame, text='From SDK launcher folder (legacy)', variable=self.custom_image_var, value=False, command=self.update_image_frames)
+        
+        self.vanilla_icon_frame = Labelframe(self.icon_frame, labelwidget=self.vanilla_image_radiobtn, padding=10)
+        self.vanilla_icon_frame.pack(fill=X, expand=True)
+        
+        self.vanilla_image_name_field = Entry(self.vanilla_icon_frame)
+        self.vanilla_image_name_field.pack(fill=X, expand=True)
+        
+        self.vanilla_image_find_btn = Button(self.vanilla_icon_frame, text='Find', command=self.explore_image)
+        self.vanilla_image_find_btn.pack(side=RIGHT, anchor=N, before=self.vanilla_image_name_field, padx=(10, 0))
+        
+        self.vanilla_image_invert = BooleanVar(self.win, False)
+        self.vanilla_image_invert_box = Checkbutton(self.vanilla_icon_frame, text='Invert image', variable=self.vanilla_image_invert, onvalue=True, offvalue=False)
+        self.vanilla_image_invert_box.pack(side=TOP, pady=10)
+        
+        self.name_frame = Labelframe(self.win, text='Program name', padding=10)
+        self.name_frame.pack(side=TOP, anchor=S, before=self.pane1, pady=10)
+        
+        self.program_name_field = Entry(self.name_frame, textvariable=self.namevar)
+        self.program_name_field.pack()
+        
+        self.custom_img_frame_radiobtn = Radiobutton(self.icon_frame, text='Custom (allows higher quality)', variable=self.custom_image_var, value=True, command=self.update_image_frames)
+        self.custom_image_frame = Labelframe(self.icon_frame, labelwidget=self.custom_img_frame_radiobtn, padding=10)
+        self.custom_image_frame.pack(pady=10)
+        
+        Label(self.custom_image_frame, text='Coming in 0.9.4!').pack()
+
+
+        self.program_frame = Labelframe(self.pane1, text='Program', padding=10)
+        self.program_frame.pack(expand=True, fill=X, padx=10)
+        
+        #Label(self.program_frame, text='SDKAAKSDM').pack()
+        self.program_field = Entry(self.program_frame)
+        Label(self.program_frame, text='Executable / command').grid(row=0, column=0, padx=5, pady=5, columnspan = 2)
+        self.program_field.grid(row=1, column=0, padx=5, pady=5)
+        
+        self.locate_program_btn = Button(self.program_frame, text='Find', command=self.locate_program)
+        self.locate_program_btn.grid(row=1, column=1, padx=5, pady=5)
+        
+        self.program_mode = StringVar(self.win, self.EXECUTABLE)
+        self.program_mode_dropdown = Combobox(self.program_frame, values=[self.EXECUTABLE, self.SHELLCOMMAND], textvariable = self.program_mode, state=READONLY)
+        
+        Label(self.program_frame, text='Mode').grid(row=2, columnspan=2, padx=5, pady=5)
+        self.program_mode_dropdown.grid(row=3, columnspan=2, padx=5, pady=5, ipadx=20)
+
+        self.update_image_frames()
+        self.win.withdraw()
+        #self.schedule_img_update()
+        
+        self.win.wm_protocol('WM_DELETE_WINDOW', self.win.withdraw)
+        
+    def locate_program(self):
+        f = askopenfilename(defaultextension='.exe', filetypes=[('Executable and batch files', '.exe .bat .cmd .ps1')], initialdir=sdkdata['binpath'], parent=self.win)
+        
+        if f:
+            try:
+                is_in_bin = os.path.commonpath([
+                    os.path.normpath(sdkdata['binpath']),
+                    os.path.normpath(f)]) == os.path.normpath(sdkdata['binpath'])
+            except ValueError:
+                is_in_bin = False
+            #print(os.path.commonpath([sdkdata['binpath'], f]), sdkdata['binpath'])
+            self.program_mode.set(
+                self.EXECUTABLE if is_in_bin else self.SHELLCOMMAND
+            )
+            self.program_field.delete(0, END)
+            self.program_field.insert(END, os.path.relpath(f, sdkdata['binpath']) if is_in_bin else f)
+        
+    def explore_image(self):
+        f = askopenfilename(parent=self.win, defaultextension='.tga', filetypes=[('Targa image files', '.tga')], initialdir=os.path.join(sdkdata['sdkpath'], 'vgui'))
+        if f:
+            self.vanilla_image_name_field.delete(0, END)
+            self.vanilla_image_name_field.insert(END, os.path.relpath(f, os.path.join(sdkdata['sdkpath'], 'vgui')))
+            
+            self.vanilla_image_invert.set(not os.path.splitext(os.path.basename(f))[0] in medialist_transform.VALVE_ORIGINAL_ICONS)
+            
+    def update_image_frames(self):
+        for child in self.vanilla_icon_frame.winfo_children():
+            try:
+                child.configure(state=DISABLED if self.custom_image_var.get() else NORMAL)
+            except tk.TclError:
+                pass
+            
+        for child in self.custom_image_frame.winfo_children():
+            try:
+                child.configure(state=NORMAL if self.custom_image_var.get() else DISABLED)
+            except tk.TclError:
+                pass
+        
+    def schedule_img_update(self):
+        self.next_img_update = self.win.after(500, self.update_image_preview)
+        
+    def update_image_preview(self):
+        self.schedule_img_update()
+        if self.vanilla_image_name_field.get().strip() == '':
+            return
+        path = os.path.join(sdkdata['sdkpath'], 'vgui', self.vanilla_image_name_field.get())
+        if os.path.exists(path):
+            _img = Image.open(path)
+            _img.load()
+            img = (invertAlpha(_img) if self.vanilla_image_invert.get() else _img).resize((32, 32), Image.NEAREST)
+            
+            self._imgtk = ImageTk.PhotoImage(img)
+            
+            self.preview_image.configure(image=self._imgtk, text='')
+        else:
+            self.preview_image.configure(image='', text='none')
+    
+    def setfield(self, field: Entry, value: str):
+        field.delete(0, END)
+        field.insert(END, value)
         
     def edit(self, app: App):
-        pass
-    
-AppEditor()
+        self.win.deiconify()
+        
+        self.namevar.set(app.name)
+        self.setfield(self.vanilla_image_name_field, app.iconpath + '.tga')
+        
+        self.vanilla_image_invert.set(app.invert_image)
+        
+        next_img_update = getattr(self, 'next_img_update', None)
+        if next_img_update != None:
+            self.win.after_cancel(next_img_update) 
+        self.update_image_preview()
+        
+        self.setfield(self.program_field, app.program)
+        self.program_mode.set(self.SHELLCOMMAND if app.shellexecute else self.EXECUTABLE)
 
 if 'sdk.json' not in os.listdir(APP_DIRECTORY):
     ginfo = ask_for_gameinfo()
@@ -603,6 +750,8 @@ for group, programs in medialist.items():
         program.setdefault('Program', None)
         program.setdefault('ShellExecute', None)
         app_list_manager.addApp(program['Title'], program['Image'], img, inverted_img, group, program['Program'], program['ShellExecute'], program['Title'].lower(), program['invert_image'], program['tooltip'])
+        
+edit_win = AppEditor()
     
 win.wm_protocol('WM_DELETE_WINDOW', onWindowClosed)
 
